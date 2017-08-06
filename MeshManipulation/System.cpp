@@ -2,53 +2,61 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "Vector.h"
+#include <glm\glm.hpp>
+#include <glm\gtc\type_ptr.hpp>
+#include <glm\gtc\matrix_transform.hpp>
+#include "Helper.h"
 
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
-#define Z_NEAR 1.0
-#define Z_FAR 2000.0
+#define Z_NEAR 1.0f
+#define Z_FAR 1000.0f
 
 
 namespace mm
 {
-	int halfSubdivision(Triangle tri, std::vector<Triangle> *list, int iteration)
-	{
-		int totalIt = iteration;
-		if (iteration <= 0)
-			return 3;
-		// calculate 3 new points
-		Vertex3f A, B, C, D, E, F;
-		A = tri.A; B = tri.B; C = tri.C;
-		D.x = (A.x + B.x) / 2.f; D.y = (A.y + B.y) / 2.f; D.z = (A.z + B.z) / 2.f;
-		E.x = (B.x + C.x) / 2.f; E.y = (B.y + C.y) / 2.f; E.z = (B.z + C.z) / 2.f;
-		F.x = (A.x + C.x) / 2.f; F.y = (A.y + C.y) / 2.f; F.z = (A.z + C.z) / 2.f;
+	// subdivision func
+	//int halfSubdivision(Triangle tri, std::vector<Triangle> *list, int iteration)
+	//{
+	//	int totalIt = iteration;
+	//	if (iteration <= 0)
+	//	{
+	//		list->push_back(tri);
+	//		return 1;
+	//	}
+	//	// calculate 3 new points
+	//	Vertex3f A, B, C, D, E, F;
+	//	A = tri.A; B = tri.B; C = tri.C;
+	//	D.x = (A.x + B.x) / 2.f; D.y = (A.y + B.y) / 2.f; D.z = (A.z + B.z) / 2.f;
+	//	E.x = (B.x + C.x) / 2.f; E.y = (B.y + C.y) / 2.f; E.z = (B.z + C.z) / 2.f;
+	//	F.x = (A.x + C.x) / 2.f; F.y = (A.y + C.y) / 2.f; F.z = (A.z + C.z) / 2.f;
 
-		Triangle t1 = { A,D,F }, t2 = { F,D,E }, t3 = { D,B,E }, t4 = { F,E,C };
+	//	Triangle t1 = { A,D,F }, t2 = { F,D,E }, t3 = { D,B,E }, t4 = { F,E,C };
 
-		// create 4 triangles
-		list->push_back(t1);
-		list->push_back(t2);
-		list->push_back(t3);
-		list->push_back(t4);
+	//	// create 4 triangles
+	//	list->push_back(t1);
+	//	list->push_back(t2);
+	//	list->push_back(t3);
+	//	list->push_back(t4);
 
-		iteration -= 1;
-		if (iteration > 0)
-		{
-			list->pop_back();
-			list->pop_back();
-			list->pop_back();
-			list->pop_back();
+	//	iteration -= 1;
+	//	if (iteration > 0)
+	//	{
+	//		list->pop_back();
+	//		list->pop_back();
+	//		list->pop_back();
+	//		list->pop_back();
 
-			halfSubdivision(t1, list, iteration);
-			halfSubdivision(t2, list, iteration);
-			halfSubdivision(t3, list, iteration);
-			halfSubdivision(t4, list, iteration);
-		}
+	//		halfSubdivision(t1, list, iteration);
+	//		halfSubdivision(t2, list, iteration);
+	//		halfSubdivision(t3, list, iteration);
+	//		halfSubdivision(t4, list, iteration);
+	//	}
 
-		return (int)pow(4, totalIt);
-	}
+	//	return (int)pow(4, totalIt);
+	//}
 
+	// Constructor
 	System::System()
 	{
 		// Initial glfw
@@ -85,11 +93,11 @@ namespace mm
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
-
+	// start()
 	void System::start()
 	{
 		_init();
-		_resize(SCREEN_WIDTH, SCREEN_HEIGHT);
+		
 		while (!glfwWindowShouldClose(_window))
 		{
 			_render();
@@ -103,61 +111,121 @@ namespace mm
 		glfwTerminate();
 	}
 
+	// _inti();
 	void System::_init()
 	{
-		// triangle
-		Triangle tri = { 0.0f, 0.5f, 0.0f,
-						 0.5f, -0.5f, 0.0f,
-						-0.5f, -0.5f, 0.0f };
+		// cube vertices
+		unsigned int indices[36];
+		for (int i = 0; i < 36; ++i)
+		{
+			indices[i] = i;
+		}
 
-		std::vector<Triangle> *lists = new std::vector<Triangle>;
+		float vertices[] = {
+				-1.0f,-1.0f,-1.0f, // triangle 1 : begin
+				-1.0f,-1.0f, 1.0f,
+				-1.0f, 1.0f, 1.0f, // triangle 1 : end
+				1.0f, 1.0f,-1.0f, // triangle 2 : begin
+				-1.0f,-1.0f,-1.0f,
+				-1.0f, 1.0f,-1.0f, // triangle 2 : end
+				1.0f,-1.0f, 1.0f,
+				-1.0f,-1.0f,-1.0f,
+				1.0f,-1.0f,-1.0f,
+				1.0f, 1.0f,-1.0f,
+				1.0f,-1.0f,-1.0f,
+				-1.0f,-1.0f,-1.0f,
+				-1.0f,-1.0f,-1.0f,
+				-1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f,-1.0f,
+				1.0f,-1.0f, 1.0f,
+				-1.0f,-1.0f, 1.0f,
+				-1.0f,-1.0f,-1.0f,
+				-1.0f, 1.0f, 1.0f,
+				-1.0f,-1.0f, 1.0f,
+				1.0f,-1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f,-1.0f,-1.0f,
+				1.0f, 1.0f,-1.0f,
+				1.0f,-1.0f,-1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f,-1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f,-1.0f,
+				-1.0f, 1.0f,-1.0f,
+				1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f,-1.0f,
+				-1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f, 1.0f,
+				1.0f,-1.0f, 1.0f
+		};
 
-		_vertCount = halfSubdivision( tri, lists, 7 )*3;
+		// vertex array object
+		glGenVertexArrays(1,&_vao);
+		glBindVertexArray(_vao);
 
 		// vertex buffer object
 		glGenBuffers(1, &_vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		glBufferData(GL_ARRAY_BUFFER, lists->size()*sizeof(Triangle), lists->data(), GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,GL_STATIC_DRAW);
 
-		// vertex array object
-		glGenVertexArrays(1, &_vao);
-		glBindVertexArray(_vao);
+		// index buffer object
+		glGenBuffers(1, &_ibo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ibo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indices), indices,GL_STATIC_DRAW);
+
+		// vertex attributes
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), 0);
 		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-		glBindVertexArray(0);
+		glEnable(GL_CULL_FACE);
+		glFrontFace(GL_CW);
+		glCullFace(GL_BACK);
 
 		_initShader();
 	}
 
+	// _render()
 	void System::_render()
 	{
 		int width, height;
 		glfwGetFramebufferSize(_window, &width, &height);
-		glViewport(0, 0, width, height);
+		_resize(width, height);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glEnableVertexAttribArray(0);
 		
 		glUseProgram(_prog);
 		glBindVertexArray(_vao);
-		glDrawArrays(GL_TRIANGLES, 0, _vertCount);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
 
 		glfwSwapBuffers(_window);
 	}
 
+	// _resize()
 	void System::_resize(int width, int height)
 	{
-		/*if (height == 0)	height = 1;
+		if (height == 0)	height = 1;
 		float ratio = (1.0f * width) / (1.0f * height);
 		
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
 		glViewport(0, 0, width, height);
-		gluPerspective(90, ratio, Z_NEAR, Z_FAR);
-		glMatrixMode(GL_MODELVIEW);*/
+
+		glm::mat4 projection;
+		projection = glm::perspective(glm::radians(45.f), width*1.f / height, Z_NEAR, Z_FAR);
+		glm::mat4 view;
+		view = glm::lookAt(glm::vec3(0.f, 3.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f,1.f,-1.f));
+		view = glm::translate(view, glm::vec3(0.f, 0.f, 0.f));
+		
+		glUseProgram(_prog);
+		int locProj = glGetUniformLocation(_prog, "projection");
+		int locView = glGetUniformLocation(_prog, "view");
+		glUniformMatrix4fv(locProj, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(locView, 1, GL_FALSE, glm::value_ptr(view));
 	}
 
+	// _readFile()
 	char* System::_readFile(char* path, int &size)
 	{
 		std::ifstream::pos_type length;
@@ -185,6 +253,7 @@ namespace mm
 		return temp;
 	}
 
+	// _initShader()
 	void System::_initShader()
 	{
 		GLuint frag, vert;
@@ -224,6 +293,7 @@ namespace mm
 		glLinkProgram(_prog);
 	}
 
+	// _printShaderInfor()
 	void System::_printShaderInfo(int shader)
 	{
 		int logLen, charsWritten = 0;

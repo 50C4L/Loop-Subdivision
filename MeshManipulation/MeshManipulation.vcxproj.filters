@@ -26,7 +26,7 @@
     <ClInclude Include="System.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Vector.h">
+    <ClInclude Include="Helper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -104,15 +104,21 @@ namespace mm {
 		}
 	};
 
-	struct Vertex3f
+	struct vec3f
 	{
 		float x, y, z;
+	};
+
+	struct Vertex
+	{
+		vec3f pos;
+		vec3f normal;
 	};
 
 	// Triangle struct
 	struct Triangle
 	{
-		Vertex3f A, B, C;
+		Vertex A, B, C;
 	};
 
 }

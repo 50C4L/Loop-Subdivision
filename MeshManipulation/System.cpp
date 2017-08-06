@@ -15,46 +15,46 @@
 
 namespace mm
 {
-	// subdivision func
-	//int halfSubdivision(Triangle tri, std::vector<Triangle> *list, int iteration)
-	//{
-	//	int totalIt = iteration;
-	//	if (iteration <= 0)
-	//	{
-	//		list->push_back(tri);
-	//		return 1;
-	//	}
-	//	// calculate 3 new points
-	//	Vertex3f A, B, C, D, E, F;
-	//	A = tri.A; B = tri.B; C = tri.C;
-	//	D.x = (A.x + B.x) / 2.f; D.y = (A.y + B.y) / 2.f; D.z = (A.z + B.z) / 2.f;
-	//	E.x = (B.x + C.x) / 2.f; E.y = (B.y + C.y) / 2.f; E.z = (B.z + C.z) / 2.f;
-	//	F.x = (A.x + C.x) / 2.f; F.y = (A.y + C.y) / 2.f; F.z = (A.z + C.z) / 2.f;
+	// subdivision func - old code
+	/*int halfSubdivision(Triangle tri, std::vector<Triangle> *list, int iteration)
+	{
+		int totalIt = iteration;
+		if (iteration <= 0)
+		{
+			list->push_back(tri);
+			return 1;
+		}
+		// calculate 3 new points
+		Vertex3f A, B, C, D, E, F;
+		A = tri.A; B = tri.B; C = tri.C;
+		D.x = (A.x + B.x) / 2.f; D.y = (A.y + B.y) / 2.f; D.z = (A.z + B.z) / 2.f;
+		E.x = (B.x + C.x) / 2.f; E.y = (B.y + C.y) / 2.f; E.z = (B.z + C.z) / 2.f;
+		F.x = (A.x + C.x) / 2.f; F.y = (A.y + C.y) / 2.f; F.z = (A.z + C.z) / 2.f;
 
-	//	Triangle t1 = { A,D,F }, t2 = { F,D,E }, t3 = { D,B,E }, t4 = { F,E,C };
+		Triangle t1 = { A,D,F }, t2 = { F,D,E }, t3 = { D,B,E }, t4 = { F,E,C };
 
-	//	// create 4 triangles
-	//	list->push_back(t1);
-	//	list->push_back(t2);
-	//	list->push_back(t3);
-	//	list->push_back(t4);
+		// create 4 triangles
+		list->push_back(t1);
+		list->push_back(t2);
+		list->push_back(t3);
+		list->push_back(t4);
 
-	//	iteration -= 1;
-	//	if (iteration > 0)
-	//	{
-	//		list->pop_back();
-	//		list->pop_back();
-	//		list->pop_back();
-	//		list->pop_back();
+		iteration -= 1;
+		if (iteration > 0)
+		{
+			list->pop_back();
+			list->pop_back();
+			list->pop_back();
+			list->pop_back();
 
-	//		halfSubdivision(t1, list, iteration);
-	//		halfSubdivision(t2, list, iteration);
-	//		halfSubdivision(t3, list, iteration);
-	//		halfSubdivision(t4, list, iteration);
-	//	}
+			halfSubdivision(t1, list, iteration);
+			halfSubdivision(t2, list, iteration);
+			halfSubdivision(t3, list, iteration);
+			halfSubdivision(t4, list, iteration);
+		}
 
-	//	return (int)pow(4, totalIt);
-	//}
+		return (int)pow(4, totalIt);
+	}*/
 
 	// Constructor
 	System::System()
@@ -114,8 +114,8 @@ namespace mm
 	// _inti();
 	void System::_init()
 	{
-		// cube vertices
-		unsigned int indices[36];
+		//// cube vertices
+		/*unsigned int indices[36];
 		for (int i = 0; i < 36; ++i)
 		{
 			indices[i] = i;
@@ -176,7 +176,10 @@ namespace mm
 
 		// vertex attributes
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), 0);
-		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(0);*/
+
+		_cube = new CubeObject();
+		_cube->createBaseShape();
 
 		glEnable(GL_CULL_FACE);
 		glFrontFace(GL_CW);
@@ -193,13 +196,9 @@ namespace mm
 		_resize(width, height);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glPolygonMode(GL_FRONT, GL_LINE);
-		glEnableVertexAttribArray(0);
 		
 		glUseProgram(_prog);
-		glBindVertexArray(_vao);
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
+		_cube->drawObj();
 
 		glfwSwapBuffers(_window);
 	}

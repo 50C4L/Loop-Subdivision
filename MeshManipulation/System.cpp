@@ -8,7 +8,7 @@
 #include "Helper.h"
 
 #define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
+#define SCREEN_HEIGHT 800
 #define Z_NEAR 1.0f
 #define Z_FAR 1000.0f
 
@@ -114,76 +114,14 @@ namespace mm
 	// _inti();
 	void System::_init()
 	{
-		//// cube vertices
-		/*unsigned int indices[36];
-		for (int i = 0; i < 36; ++i)
-		{
-			indices[i] = i;
-		}
-
-		float vertices[] = {
-				-1.0f,-1.0f,-1.0f, // triangle 1 : begin
-				-1.0f,-1.0f, 1.0f,
-				-1.0f, 1.0f, 1.0f, // triangle 1 : end
-				1.0f, 1.0f,-1.0f, // triangle 2 : begin
-				-1.0f,-1.0f,-1.0f,
-				-1.0f, 1.0f,-1.0f, // triangle 2 : end
-				1.0f,-1.0f, 1.0f,
-				-1.0f,-1.0f,-1.0f,
-				1.0f,-1.0f,-1.0f,
-				1.0f, 1.0f,-1.0f,
-				1.0f,-1.0f,-1.0f,
-				-1.0f,-1.0f,-1.0f,
-				-1.0f,-1.0f,-1.0f,
-				-1.0f, 1.0f, 1.0f,
-				-1.0f, 1.0f,-1.0f,
-				1.0f,-1.0f, 1.0f,
-				-1.0f,-1.0f, 1.0f,
-				-1.0f,-1.0f,-1.0f,
-				-1.0f, 1.0f, 1.0f,
-				-1.0f,-1.0f, 1.0f,
-				1.0f,-1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				1.0f,-1.0f,-1.0f,
-				1.0f, 1.0f,-1.0f,
-				1.0f,-1.0f,-1.0f,
-				1.0f, 1.0f, 1.0f,
-				1.0f,-1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f,-1.0f,
-				-1.0f, 1.0f,-1.0f,
-				1.0f, 1.0f, 1.0f,
-				-1.0f, 1.0f,-1.0f,
-				-1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
-				-1.0f, 1.0f, 1.0f,
-				1.0f,-1.0f, 1.0f
-		};
-
-		// vertex array object
-		glGenVertexArrays(1,&_vao);
-		glBindVertexArray(_vao);
-
-		// vertex buffer object
-		glGenBuffers(1, &_vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,GL_STATIC_DRAW);
-
-		// index buffer object
-		glGenBuffers(1, &_ibo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indices), indices,GL_STATIC_DRAW);
-
-		// vertex attributes
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), 0);
-		glEnableVertexAttribArray(0);*/
-
 		_cube = new CubeObject();
 		_cube->createBaseShape();
+		for (int i = 0; i < 3; ++i)
+			_cube->subdivide();
 
-		glEnable(GL_CULL_FACE);
-		glFrontFace(GL_CW);
-		glCullFace(GL_BACK);
+		/*glEnable(GL_CULL_FACE);
+		glFrontFace(GL_CCW);
+		glCullFace(GL_BACK);*/
 
 		_initShader();
 	}
@@ -195,10 +133,11 @@ namespace mm
 		glfwGetFramebufferSize(_window, &width, &height);
 		_resize(width, height);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glPolygonMode(GL_FRONT, GL_LINE);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		
 		glUseProgram(_prog);
-		_cube->drawObj();
+		//_cube->drawBaseObj();
+		_cube->drawSubdividedObj();
 
 		glfwSwapBuffers(_window);
 	}
@@ -214,14 +153,21 @@ namespace mm
 		glm::mat4 projection;
 		projection = glm::perspective(glm::radians(45.f), width*1.f / height, Z_NEAR, Z_FAR);
 		glm::mat4 view;
-		view = glm::lookAt(glm::vec3(0.f, 3.f, 3.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f,1.f,-1.f));
+		view = glm::lookAt(glm::vec3(0.f, 3.2f, 3.2f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f,1.f,-1.f));
 		view = glm::translate(view, glm::vec3(0.f, 0.f, 0.f));
+		static float angle = 45.0f;
+		angle += 0.01f;
+		if (angle >= 360.f) angle = 0.f;
+		glm::mat4 model(1.f);
+		model = glm::rotate(model, angle, glm::vec3(0.f, 1.f, 0.f));
 		
 		glUseProgram(_prog);
 		int locProj = glGetUniformLocation(_prog, "projection");
 		int locView = glGetUniformLocation(_prog, "view");
+		int locModel = glGetUniformLocation(_prog, "model");
 		glUniformMatrix4fv(locProj, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(locView, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(locModel, 1, GL_FALSE, glm::value_ptr(model));
 	}
 
 	// _readFile()

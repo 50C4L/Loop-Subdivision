@@ -116,8 +116,8 @@ namespace mm
 	{
 		_cube = new CubeObject();
 		_cube->createBaseShape();
-		for (int i = 0; i < 3; ++i)
-			_cube->subdivide();
+		/*for (int i = 0; i < 1; ++i)
+			_cube->subdivide();*/
 
 		/*glEnable(GL_CULL_FACE);
 		glFrontFace(GL_CCW);
@@ -136,7 +136,7 @@ namespace mm
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		
 		glUseProgram(_prog);
-		//_cube->drawBaseObj();
+		_cube->drawBaseObj();
 		_cube->drawSubdividedObj();
 
 		glfwSwapBuffers(_window);
@@ -153,7 +153,7 @@ namespace mm
 		glm::mat4 projection;
 		projection = glm::perspective(glm::radians(45.f), width*1.f / height, Z_NEAR, Z_FAR);
 		glm::mat4 view;
-		view = glm::lookAt(glm::vec3(0.f, 3.2f, 3.2f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f,1.f,-1.f));
+		view = glm::lookAt(glm::vec3(0.f, 2.0f, 2.0f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f,1.f,-1.f));
 		view = glm::translate(view, glm::vec3(0.f, 0.f, 0.f));
 		static float angle = 45.0f;
 		angle += 0.01f;

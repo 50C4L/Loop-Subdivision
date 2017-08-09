@@ -18,9 +18,9 @@ namespace mm
 
 	unsigned int CubeObject::createBaseShape()
 	{
-		_baseNormal = new std::vector<float>(108, 0.f);
+		_baseNormal = new std::vector<float>(36, 0.f);
 
-		_baseVertices = std::vector<float>{
+		/*_baseVertices = std::vector<float>{
 			-1.0f, -1.0f, -1.0f,
 			-1.0f, -1.0f, 1.0f,
 			-1.0f, 1.0f, 1.0f,
@@ -57,10 +57,25 @@ namespace mm
 			1.0f, 1.0f, 1.0f,
 			-1.0f, 1.0f, 1.0f,
 			1.0f, -1.0f, 1.0f
+		};*/
+		_baseVertices = std::vector<float>
+		{
+			0.0f, 1.f, 0.0f,
+			-1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f,
+			0.0f, 1.0f, 0.0f,
+			0.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f, 1.0f,
+			0.0f, 1.0f, 0.0f,
+			1.0f, -1.0f, 1.0f,
+			0.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f, 1.0f,
+			0.0f, -1.0f, -1.0f,
+			1.0f, -1.0f, 1.0f
 		};
 		
-		_baseIndices.reserve(36);
-		for (unsigned int i = 0; i < 36; ++i)
+		_baseIndices.reserve(12);
+		for (unsigned int i = 0; i < 12; ++i)
 		{
 			_baseIndices.push_back(i);
 			if ((i + 1) % 3 == 0)
@@ -123,26 +138,6 @@ namespace mm
 							it2->adjTri[t2index] = it - _triList.begin();
 						}
 					}
-				}
-			}
-		}
-
-		// debug check oppVert is correct
-		for (auto it = _triList.begin(); it != _triList.end(); ++it)
-		{
-			for (int i = 0; i < 3; ++i)
-			{
-				if (it->oppVert[i] >= 0)
-				{
-					int inext = (i + 1) % 3;
-					// oppisite vertex
-					int oi = it->oppVert[i] * 3;
-					vec3 o(_baseVertices[oi], _baseVertices[oi + 1], _baseVertices[oi + 2]);
-					// edge
-					int vi1 = it->vertex[i] * 3, vi2 = it->vertex[inext] * 3, vi3 = it->vertex[3-(i+inext)]*3;
-					vec3 v1(_baseVertices[vi1], _baseVertices[vi1 + 1], _baseVertices[vi1 + 2]);
-					vec3 v2(_baseVertices[vi2], _baseVertices[vi2 + 1], _baseVertices[vi2 + 2]);
-					vec3 v3(_baseVertices[vi3], _baseVertices[vi3 + 1], _baseVertices[vi3 + 2]);
 				}
 			}
 		}
@@ -212,147 +207,154 @@ namespace mm
 	void CubeObject::drawSubdividedObj()
 	{
 		glBindVertexArray(_subVao);
-		glDrawElements(GL_TRIANGLES, _triList.size() * 12, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, _tempTriList.size() * 12, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
 
 	void CubeObject::_split(Triangle tri, int triIndex)
 	{
-		vec3 curVert[3];
-		vec3 oddVert[3];
-		vec3 evenVert[3];
-		// get coordinates for current 3 vertices
-		curVert[0] = vec3(_baseVertices[tri.vertex[0] * 3], _baseVertices[tri.vertex[0] * 3 + 1], _baseVertices[tri.vertex[0] * 3 + 2] );
-		curVert[1] = vec3(_baseVertices[tri.vertex[1] * 3], _baseVertices[tri.vertex[1] * 3 + 1], _baseVertices[tri.vertex[1] * 3 + 2] );
-		curVert[2] = vec3(_baseVertices[tri.vertex[2] * 3], _baseVertices[tri.vertex[2] * 3 + 1], _baseVertices[tri.vertex[2] * 3 + 2] );
-		
-		for (int i = 0; i < 3; ++i)
-		{
-			// calculate the odd vertices
-			int inext = (i + 1) % 3;
-			// if its interior
-			// v = 3/8*(a+b)+1/8*(c+d)
-			if (tri.oppVert[i] >= 0)
-			{
-				vec3 oppVert = vec3(_baseVertices[tri.oppVert[i] * 3], _baseVertices[tri.oppVert[i] * 3 + 1], _baseVertices[tri.oppVert[i] * 3 + 2]);
-				oddVert[i] = 0.375f*(curVert[i] + curVert[inext]) + 0.125f*(curVert[3 - i - inext] +oppVert);
-			}
-			// if its on boundary, oppisite vertex not exist
-			// v = 1/2*(a+b)
-			else
-			{
-				oddVert[i] = 0.5f*(curVert[i] + curVert[inext]);
-			}
+		try {
+			vec3 curVert[3];
+			vec3 oddVert[3];
+			vec3 evenVert[3];
+			// get coordinates for current 3 vertices
+			curVert[0] = vec3(_baseVertices[tri.vertex[0] * 3], _baseVertices[tri.vertex[0] * 3 + 1], _baseVertices[tri.vertex[0] * 3 + 2]);
+			curVert[1] = vec3(_baseVertices[tri.vertex[1] * 3], _baseVertices[tri.vertex[1] * 3 + 1], _baseVertices[tri.vertex[1] * 3 + 2]);
+			curVert[2] = vec3(_baseVertices[tri.vertex[2] * 3], _baseVertices[tri.vertex[2] * 3 + 1], _baseVertices[tri.vertex[2] * 3 + 2]);
 
-			// calculate the even vertices
-			int next = (i + 1) % 3, prev = (i + 2) % 3;
-			Triangle tempTri = tri;
-			bool isInterior = false, isCalc = true;
-			std::vector<unsigned int> neighborTri;
-			std::vector<vec3> neighborVert;
-			neighborTri.push_back(triIndex);
-			neighborVert.push_back(curVert[prev]);
-			neighborVert.push_back(curVert[next]);
-
-			// find all neighbor vertices
-			// copy current location
-			int loc = i;
-			// find current edge's oppvert
-			int vI = tempTri.oppVert[loc];
-			int tI = tempTri.adjTri[loc];
-			neighborTri.push_back(tI);
-			vec3 neigVert = vec3(_baseVertices[vI * 3], _baseVertices[vI * 3 + 1], _baseVertices[vI * 3 + 2]);
-			neighborVert.push_back(neigVert);
-			while (isCalc)
+			for (int i = 0; i < 3; ++i)
 			{
-				if (tI == -1)
-					break;
-				// get the adjacent triangle
-				tempTri = _triList[tI];
-				// find neighVert's location
-				for(int j=0;j<3;++j)
+				// calculate the odd vertices
+				int inext = (i + 1) % 3;
+				// if its interior
+				// v = 3/8*(a+b)+1/8*(c+d)
+				if (tri.oppVert[i] >= 0)
 				{
-					int v = tempTri.vertex[j];
-					if (neigVert == vec3(_baseVertices[v * 3], _baseVertices[v * 3 + 1], _baseVertices[v * 3 + 2]))
-					{
-						// find current edge's oppvert
-						loc = (j + 2) % 3;
-						vI = tempTri.oppVert[loc];
-						tI = tempTri.adjTri[loc];
-						// if no adjacent triangle
-						if (tI == -1)
-						{
-							isCalc = false;
-							break;
-						}
-						// if loops back to start triangle
-						if (std::find(neighborTri.begin(), neighborTri.end(), tI) != neighborTri.end())
-						{
-							// dump the last vertex as its duplicate
-							neighborVert.pop_back();
-							isInterior = true;
-							isCalc = false;
-							break;
-						}
-
-						neighborTri.push_back(tI);
-						neigVert = vec3(_baseVertices[vI * 3], _baseVertices[vI * 3 + 1], _baseVertices[vI * 3 + 2]);
-						neighborVert.push_back(neigVert);
-						break;
-					}
-					else if (j + 1 >= 3)
-					{
-						std::cout << "Failed to find opp vert in adj triangle.\n";
-					}
+					vec3 oppVert = vec3(_baseVertices[tri.oppVert[i] * 3], _baseVertices[tri.oppVert[i] * 3 + 1], _baseVertices[tri.oppVert[i] * 3 + 2]);
+					oddVert[i] = 0.375f*(curVert[i] + curVert[inext]) + 0.125f*(curVert[3 - i - inext] + oppVert);
 				}
-			}
-
-
-			// compute even vertex
-			if (isInterior)
-			{
-				float beta;
-				int n = neighborVert.size();
-				if (n > 3)
-					beta = 3.f / (8.f*n);
+				// if its on boundary, oppisite vertex not exist
+				// v = 1/2*(a+b)
 				else
-					beta = 3.f / 16.f;
-
-				vec3 sum(0.f, 0.f, 0.f);
-				for each(vec3 nVert in neighborVert)
 				{
-					sum += nVert;
+					oddVert[i] = 0.5f*(curVert[i] + curVert[inext]);
 				}
 
-				evenVert[i] = curVert[i] * (1 - n*beta) + sum*beta;
+				// calculate the even vertices
+				int next = (i + 1) % 3, prev = (i + 2) % 3;
+				Triangle tempTri = tri;
+				bool isInterior = false, isCalc = true;
+				std::vector<unsigned int> neighborTri;
+				std::vector<vec3> neighborVert;
+				neighborTri.push_back(triIndex);
+				neighborVert.push_back(curVert[prev]);
+				neighborVert.push_back(curVert[next]);
+
+				// find all neighbor vertices
+				// copy current location
+				int loc = i;
+				// find current edge's oppvert
+				int vI = tempTri.oppVert[loc];
+				int tI = tempTri.adjTri[loc];
+				neighborTri.push_back(tI);
+
+				vec3 neigVert = vec3(_baseVertices[vI * 3], _baseVertices[vI * 3 + 1], _baseVertices[vI * 3 + 2]);
+				neighborVert.push_back(neigVert);
+				while (isCalc)
+				{
+					if (tI == -1)
+						break;
+					// get the adjacent triangle
+					tempTri = _triList[tI];
+					// find neighVert's location
+					for (int j = 0; j < 3; ++j)
+					{
+						int v = tempTri.vertex[j];
+
+						if (neigVert == vec3(_baseVertices[v * 3], _baseVertices[v * 3 + 1], _baseVertices[v * 3 + 2]))
+						{
+							// find current edge's oppvert
+							loc = (j + 2) % 3;
+							vI = tempTri.oppVert[loc];
+							tI = tempTri.adjTri[loc];
+							// if no adjacent triangle
+							if (tI == -1)
+							{
+								isCalc = false;
+								break;
+							}
+							// if loops back to start triangle
+							if (std::find(neighborTri.begin(), neighborTri.end(), tI) != neighborTri.end())
+							{
+								// dump the last vertex as its duplicate
+								neighborVert.pop_back();
+								isInterior = true;
+								isCalc = false;
+								break;
+							}
+
+							neighborTri.push_back(tI);
+							neigVert = vec3(_baseVertices[vI * 3], _baseVertices[vI * 3 + 1], _baseVertices[vI * 3 + 2]);
+							neighborVert.push_back(neigVert);
+							break;
+						}
+						else if (j + 1 >= 3)
+						{
+							std::cout << "Failed to find opp vert in adj triangle.\n";
+						}
+					}
+				}
+
+
+				// compute even vertex
+				if (isInterior)
+				{
+					float beta;
+					int n = neighborVert.size();
+					if (n > 3)
+						beta = 3.f / (8.f*n);
+					else
+						beta = 3.f / 16.f;
+
+					vec3 sum(0.f, 0.f, 0.f);
+					for each(vec3 nVert in neighborVert)
+					{
+						sum += nVert;
+					}
+
+					evenVert[i] = curVert[i] * (1 - n*beta) + sum*beta;
+				}
+				else
+					evenVert[i] = 0.125f*(neighborVert.front() + neighborVert.back()) + 0.75f*curVert[i];
 			}
-			else
-				evenVert[i] = 0.125f*(neighborVert.front() + neighborVert.back()) + 0.75f*curVert[i];
-		}
 
-		// build triangles
-		// 3 outter triangles
-		for (int n = 0; n < 3; ++n)
-		{
-			_currentVertices.push_back(evenVert[n].x);
-			_currentVertices.push_back(evenVert[n].y);
-			_currentVertices.push_back(evenVert[n].z);
-			_currentVertices.push_back(oddVert[n].x);
-			_currentVertices.push_back(oddVert[n].y);
-			_currentVertices.push_back(oddVert[n].z);
-			_currentVertices.push_back(oddVert[(n + 2) % 3].x);
-			_currentVertices.push_back(oddVert[(n + 2) % 3].y);
-			_currentVertices.push_back(oddVert[(n + 2) % 3].z);
-		}
-		// mid triangle
-		for (int n = 0; n < 3; ++n)
-		{
-			_currentVertices.push_back(oddVert[n].x);
-			_currentVertices.push_back(oddVert[n].y);
-			_currentVertices.push_back(oddVert[n].z);
-		}
-		
+			// build triangles
+			// 3 outter triangles
+			for (int n = 0; n < 3; ++n)
+			{
+				_currentVertices.push_back(evenVert[n].x);
+				_currentVertices.push_back(evenVert[n].y);
+				_currentVertices.push_back(evenVert[n].z);
+				_currentVertices.push_back(oddVert[n].x);
+				_currentVertices.push_back(oddVert[n].y);
+				_currentVertices.push_back(oddVert[n].z);
+				_currentVertices.push_back(oddVert[(n + 2) % 3].x);
+				_currentVertices.push_back(oddVert[(n + 2) % 3].y);
+				_currentVertices.push_back(oddVert[(n + 2) % 3].z);
+			}
+			// mid triangle
+			for (int n = 0; n < 3; ++n)
+			{
+				_currentVertices.push_back(oddVert[n].x);
+				_currentVertices.push_back(oddVert[n].y);
+				_currentVertices.push_back(oddVert[n].z);
+			}
 
+		}
+		catch (std::exception e)
+		{
+			std::cout << e.what() << std::endl;
+		}
 	}
 	
 	Triangle CubeObject::_createTriangle(int i0, int i1, int i2)
@@ -365,9 +367,12 @@ namespace mm
 		t.normal[0] = i0;
 		t.normal[1] = i1;
 		t.normal[2] = i2;
-		t.oppVert[0] = -1;
-		t.oppVert[1] = -1;
-		t.oppVert[2] = -1;
+		for (int i = 0; i < 3; ++i)
+		{
+			t.oppVert[i] = -1;
+			t.adjTri[i] = -1;
+		}
+
 		// get coordinates for 3 vertices
 		vec3 v1 = vec3(_baseVertices[i0 * 3], _baseVertices[i0 * 3 + 1], _baseVertices[i0 * 3 + 2]);
 		vec3 v2 = vec3(_baseVertices[i1 * 3], _baseVertices[i1 * 3 + 1], _baseVertices[i1 * 3 + 2]);

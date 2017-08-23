@@ -15,6 +15,16 @@
 
 namespace mm
 {
+	enum IterationNum
+	{
+		IT_ONE = 0,
+		IT_TWO,
+		IT_THREE,
+		IT_FOUR
+	};
+
+	auto subIt = IT_ONE;
+
 	// subdivision func - old code
 	/*int halfSubdivision(Triangle tri, std::vector<Triangle> *list, int iteration)
 	{
@@ -67,7 +77,7 @@ namespace mm
 			exit(1);
 		}
 
-		_window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Subdivision", NULL, NULL);
+		_window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Subdivision - Use 1,2,3,4 to switch different iterations", NULL, NULL);
 		if (!_window)
 		{
 			std::cout << "Failed to initial glfw window!\n";
@@ -97,7 +107,7 @@ namespace mm
 	void System::start()
 	{
 		_init();
-		
+
 		while (!glfwWindowShouldClose(_window))
 		{
 			_render();
@@ -115,20 +125,54 @@ namespace mm
 	void System::_init()
 	{
 		_cube = new CubeObject();
+		_cube2 = new CubeObject();
+		_cube3 = new CubeObject();
+		_cube4 = new CubeObject();
 		_cube->createBaseShape();
-		/*for (int i = 0; i < 1; ++i)
-			_cube->subdivide();*/
+		_cube2->createBaseShape();
+		_cube3->createBaseShape();
+		_cube4->createBaseShape();
 
-		/*glEnable(GL_CULL_FACE);
-		glFrontFace(GL_CCW);
-		glCullFace(GL_BACK);*/
+		// subdivisions
+		_cube->subdivide();
+		for (int i = 0; i < 2; ++i)
+			_cube2->subdivide();
+		for (int i = 0; i < 3; ++i)
+			_cube3->subdivide();
+		for (int i = 0; i < 4; ++i)
+			_cube4->subdivide();
 
 		_initShader();
 	}
 
+
+	// _inpout()
+	void System::_input()
+	{
+		if (glfwGetKey(_window, GLFW_KEY_1) == GLFW_PRESS)
+		{
+			subIt = IT_ONE;
+		}
+		if (glfwGetKey(_window, GLFW_KEY_2) == GLFW_PRESS)
+		{
+			subIt = IT_TWO;
+		}
+		if (glfwGetKey(_window, GLFW_KEY_3) == GLFW_PRESS)
+		{
+			subIt = IT_THREE;
+		}
+		if (glfwGetKey(_window, GLFW_KEY_4) == GLFW_PRESS)
+		{
+			subIt = IT_FOUR;
+		}
+	}
+
+
 	// _render()
 	void System::_render()
 	{
+		_input();
+
 		int width, height;
 		glfwGetFramebufferSize(_window, &width, &height);
 		_resize(width, height);
@@ -137,7 +181,24 @@ namespace mm
 		
 		glUseProgram(_prog);
 		_cube->drawBaseObj();
-		_cube->drawSubdividedObj();
+		switch (subIt)
+		{
+		case IT_ONE:
+			_cube->drawSubdividedObj();
+			break;
+		case IT_TWO:
+			_cube2->drawSubdividedObj();
+			break;
+		case IT_THREE:
+			_cube3->drawSubdividedObj();
+			break;
+		case IT_FOUR:
+			_cube4->drawSubdividedObj();
+			break;
+		default:
+			_cube->drawSubdividedObj();
+			break;
+		}
 
 		glfwSwapBuffers(_window);
 	}

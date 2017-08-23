@@ -18,8 +18,6 @@ namespace mm
 
 	unsigned int CubeObject::createBaseShape()
 	{
-		_baseNormal = new std::vector<float>(36, 0.f);
-
 		/*_baseVertices = std::vector<float>{
 			-1.0f, -1.0f, -1.0f,
 			-1.0f, -1.0f, 1.0f,
@@ -150,6 +148,7 @@ namespace mm
 
 		// initial
 		int midVertNum = _triList.size() * 3;
+		_baseNormal.clear();
 		_tempTriList.clear();
 		_currentVertices.clear();
 		_currentIndices.clear();
@@ -184,13 +183,21 @@ namespace mm
 		glBindBuffer(GL_ARRAY_BUFFER, _subVbo);
 		glBufferData(GL_ARRAY_BUFFER, _baseVertices.size() * sizeof(float), _baseVertices.data(), GL_STATIC_DRAW);
 
+		// normal buffer object
+		glGenBuffers(1, &_subVno);
+		glBindBuffer(GL_ARRAY_BUFFER, _subVno);
+		glBufferData(GL_ARRAY_BUFFER, _baseNormal.size() * sizeof(float), _baseNormal.data(), GL_STATIC_DRAW);
+		
 		// index buffer object
 		glGenBuffers(1, &_subEbo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _subEbo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, _currentIndices.size() * sizeof(int), _currentIndices.data(), GL_STATIC_DRAW);
 
 		// vertex attributes
+		glBindBuffer(GL_ARRAY_BUFFER, _subVbo);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+		glBindBuffer(GL_ARRAY_BUFFER, _subVno);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 		glEnableVertexAttribArray(0);
 
 		glBindVertexArray(0);
@@ -379,15 +386,15 @@ namespace mm
 		vec3 v3 = vec3(_baseVertices[i2 * 3], _baseVertices[i2 * 3 + 1], _baseVertices[i2 * 3 + 2]);
 		
 		// calculate face normal
-		/*vec3 nor = cross(vec3(v2 - v1), vec3(v3 - v1));
+		vec3 nor = cross(vec3(v2 - v1), vec3(v3 - v1));
 		nor = normalize(nor);
 		int k = i0 * 3;
 		for (int i = k; i < (k + 9); i+=3)
 		{
-			(*_baseNormal)[i] = nor.x;
-			(*_baseNormal)[i+1] = nor.y;
-			(*_baseNormal)[i+2] = nor.z;
-		}*/
+			_baseNormal.push_back(nor.x);
+			_baseNormal.push_back(nor.y);
+			_baseNormal.push_back(nor.z);
+		}
 
 		_triList.push_back(t);
 		return t;
@@ -409,11 +416,6 @@ namespace mm
 			// Found! return index to the oppisite vertex 
 			if (n1 == e1 && n2 == e2)
 			{
-				/*int oi = tri2.vertex[3 - (i + inext)] * 3;
-				vec3 o((*_baseVertices)[oi], (*_baseVertices)[oi + 1], (*_baseVertices)[oi + 2]);
-				std::cout << "(" << o.x << "," << o.y << "," << o.z << ") " << oi/3 << " \n";
-				std::cout << "v1(" << n1.x << "," << n1.y << "," << n1.z << ")\n";
-				std::cout << "v2(" << n2.x << "," << n2.y << "," << n2.z << ")\n";*/
 				in = i;
 				return tri2.vertex[3 - (i + inext)];
 			}

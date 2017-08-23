@@ -42,12 +42,12 @@ namespace mm {
 
 		std::vector<float>			_baseVertices;
 		std::vector<float>			_currentVertices;
-		std::vector<float>			*_baseNormal;
+		std::vector<float>			_baseNormal;
 		std::vector<Triangle>		_triList;
 		std::vector<Triangle>		_tempTriList;
 		std::vector<unsigned int>	_baseIndices;
 		std::vector<unsigned int>	_currentIndices;
-		unsigned int	_subVao, _subVbo, _subEbo;
+		unsigned int	_subVao, _subVbo, _subVno, _subEbo;
 		unsigned int	_vao, _vbo, _ebo;
 	};
 }

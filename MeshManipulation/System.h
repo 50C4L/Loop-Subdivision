@@ -20,6 +20,7 @@ namespace mm
 		void shutdown();
 
 	private:
+		void _input();
 		void _render();
 		void _resize( int width, int height );
 		void _init();
@@ -29,7 +30,8 @@ namespace mm
 		
 		unsigned int _vao, _vbo, _ibo;
 		unsigned int _prog;
-		CubeObject *_cube;
+
+		CubeObject *_cube, *_cube2, *_cube3, *_cube4;
 
 		GLFWwindow *_window;
 	};
